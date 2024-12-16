@@ -2,208 +2,26 @@
     <teleport to="body">
         <div class="backdrop">
             <div class="container">
-                <label> 제목 :<input type="text" v-model="noticeDetail.noti_title" /> </label>
+                <label> 제목 :<input type="text" /> </label>
                 <label>
                     내용 :
-                    <input type="text" v-model="noticeDetail.noti_content" />
+                    <input type="text" />
                 </label>
-                파일 :<input type="file" style="display: none" id="fileInput" @change="handlerFile" />
+                파일 :<input type="file" style="display: none" id="fileInput" />
                 <label class="img-label" htmlFor="fileInput"> 파일 첨부하기 </label>
-                <div @click="fileDownload">
-                    <div v-if="imageUrl">
-                        <label>미리보기</label>
-                        <img :src="imageUrl" />
-                    </div>
-                    <div v-else>
-                        <label>파일명</label>
-                        {{ fileData?.name || noticeDetail?.file_name }}
-                    </div>
+                <div>
+                    <label>파일명</label>
                 </div>
                 <div class="button-box">
-                    <button @click="props.noticeSeq > 0 ? noticeUpdate() : noticeSave()">
-                        {{ props.noticeSeq > 0 ? "수정" : "저장" }}
-                    </button>
-                    <button v-if="props.noticeSeq > 0" @click="noticeDelete">삭제</button>
-                    <button @click="modalState.setModalState">나가기</button>
+                    <button>삭제</button>
+                    <button>나가기</button>
                 </div>
             </div>
         </div>
     </teleport>
 </template>
 
-<script setup>
-import { useModalStore } from "@/stores/modalState";
-import { useUserInfo } from "@/stores/userInfo";
-import axios from "axios";
-
-// 부모 컴포넌트에서 전달받은 props를 사용할 수 있도록 정의한다.
-const props = defineProps(["noticeSeq"]);
-const emit = defineEmits(["modalClose", "postSuccess"]);
-
-const modalState = useModalStore();
-const userInfo = useUserInfo();
-const imageUrl = ref("");
-const fileData = ref("");
-
-const noticeDetail = ref(
-    new Object({
-        noti_title: "",
-        noti_content: ""
-    })
-);
-
-const searchDetail = () => {
-    axios
-        .post("/api/board/noticeDetail.do", {
-            noticeSeq: props.noticeSeq
-        })
-        .then((res) => {
-            noticeDetail.value = res.data.detailValue;
-            if (
-                noticeDetail.value.file_ext === "jpg" ||
-                noticeDetail.value.file_ext === "gif" ||
-                noticeDetail.value.file_ext === "png"
-            ) {
-                fileDownload("preview");
-            }
-        });
-};
-
-onMounted(() => {
-    props.noticeSeq ? searchDetail() : null;
-});
-
-// 자식 컴포넌트가 언마운트 됐을 때 부모 컴포넌트에서 modalClose 함수를 실행함
-onUnmounted(() => {
-    emit("modalClose");
-});
-
-const noticeSave = () => {
-    const textData = {
-        title: noticeDetail.value.noti_title,
-        content: noticeDetail.value.noti_content,
-        loginId: userInfo.user.loginId
-    };
-
-    const fileForm = new FormData();
-    if (fileData.value) fileForm.append("file", fileData.value);
-    fileForm.append(
-        "text",
-        new Blob([JSON.stringify(textData)], {
-            type: "application/json"
-        })
-    );
-
-    axios.post("/api/board/noticeFileSaveJson.do", fileForm).then((res) => {
-        if (res.data.result === "success") {
-            modalState.setModalState();
-            emit("postSuccess");
-        }
-    });
-
-    // axios
-    //     .post("/api/board/noticeSave.do", {
-    //         title: noticeDetail.value.noti_title,
-    //         content: noticeDetail.value.noti_content,
-    //         loginId: userInfo.user.loginId
-    //     })
-    //     .then((res) => {
-    //         if (res.data.result === "success") {
-    //             modalState.setModalState();
-    //             emit("postSuccess");
-    //         }
-    //     });
-};
-
-const noticeUpdate = () => {
-    const textData = {
-        title: noticeDetail.value.noti_title,
-        content: noticeDetail.value.noti_content,
-        noticeSeq: noticeDetail.value.noti_seq
-    };
-
-    const fileForm = new FormData();
-    if (fileData.value) fileForm.append("file", fileData.value);
-    fileForm.append(
-        "text",
-        new Blob([JSON.stringify(textData)], {
-            type: "application/json"
-        })
-    );
-
-    axios.post("/api/board/noticeFileUpdateJson.do", fileForm).then((res) => {
-        if (res.data.result === "success") {
-            modalState.setModalState();
-            emit("postSuccess");
-        }
-    });
-
-    // axios
-    //     .post("/api/board/noticeUpdate.do", {
-    //         title: noticeDetail.value.noti_title,
-    //         content: noticeDetail.value.noti_content,
-    //         noticeSeq: noticeDetail.value.noti_seq
-    //     })
-    //     .then((res) => {
-    //         if (res.data.result === "success") {
-    //             modalState.setModalState();
-    //             emit("postSuccess");
-    //         }
-    //     });
-};
-
-const noticeDelete = () => {
-    axios
-        .post("/api/board/noticeDelete.do", {
-            noticeSeq: noticeDetail.value.noti_seq
-        })
-        .then((res) => {
-            if (res.data.result === "success") {
-                modalState.setModalState();
-                emit("postSuccess");
-            }
-        });
-};
-
-const handlerFile = (e) => {
-    const fileInfo = e.target.files; // FileList {0: File, length: 1}
-
-    const fileInfoSplit = fileInfo[0].name.split(".");
-    const fileExtension = fileInfoSplit[1].toLowerCase();
-    if (fileExtension === "jpg" || fileExtension === "gif" || fileExtension === "png") {
-        imageUrl.value = URL.createObjectURL(fileInfo[0]); // blob 형태로 이미지 url 생성
-    }
-    fileData.value = fileInfo[0];
-};
-
-// 파일 미리보기
-const fileDownload = async (flag) => {
-    let param = new URLSearchParams();
-    param.append("noticeSeq", noticeDetail.value.noti_seq);
-
-    const postAction = {
-        url: "/api/board/noticeDownload.do",
-        method: "POST",
-        data: param,
-        responseType: "blob"
-    };
-
-    await axios(postAction).then((res) => {
-        const url = window.URL.createObjectURL(new Blob([res.data]));
-        if (flag === "preview") {
-            imageUrl.value = url;
-        } else {
-            const link = document.createElement("a");
-            link.href = url;
-            link.setAttribute("download", noticeDetail.value.file_name);
-            document.body.appendChild(link);
-            link.click();
-
-            link.remove(); // 메모리 누수 방지
-        }
-    });
-};
-</script>
+<script setup></script>
 
 <style lang="scss" scoped>
 .backdrop {
@@ -226,7 +44,7 @@ label {
     flex-direction: column;
 }
 
-input[type="text"] {
+input[type='text'] {
     padding: 8px;
     margin-top: 5px;
     margin-bottom: 5px;
