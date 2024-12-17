@@ -14,7 +14,7 @@
             {{ menu.mnu_nm }}
             <div class="child-menu-box" @click="handlerClick(menu.mnu_id, $event)" :id="menu.mnu_id">
                 <template v-for="node in menu.nodeList" :key="node.mnu_id">
-                    <router-link :to="'/vue' + node.mnu_url" class="router-link" replace>
+                    <router-link :to="'/vue' + node.mnu_url" class="router-link">
                         <div
                             class="child-menu-link"
                             :id="node.mnu_id"

@@ -4,23 +4,29 @@
         <input type="date" v-model="searchStartDate"/>
         <input type="date" v-model="searchEndDate"/>
         <button @click="handlerSearch">검색</button>
-        <button>신규등록</button>
+        <button @click="handlerModal">신규등록</button>
     </div>
 </template>
 <script setup>
 import router from '@/router';
 import { watchEffect } from 'vue';
+import { useModalStore } from "@/stores/modalState";
 
 const keyword = ref('');
 const searchStartDate = ref('');
 const searchEndDate = ref('');
+const modalState = useModalStore();
+
+const handlerModal = () => {
+    modalState.setModalState();
+};
 
 const handlerSearch = () => {
     // 1. url 파라미터 쿼리
     const query = [];
     !keyword.value || query.push(`searchTitle=${keyword.value}`);
-    !searchStartDate.value || query.push(`searchStartDate=${searchStartDate.value}`);
-    !searchEndDate.value || query.push(`searchEndDate=${searchEndDate.value}`);
+    !searchStartDate.value || query.push(`searchStDate=${searchStartDate.value}`);
+    !searchEndDate.value || query.push(`searchEdDate=${searchEndDate.value}`);
     const queryString = query.length > 0 ? `?${query.join('&')}` : '';
 
     router.push(queryString);
