@@ -1,5 +1,5 @@
 <template>
-    <a href="">
+    <a href="/vue">
         <img :src="logo" alt="happyjob" />
     </a>
     <div class="logo-box">
@@ -72,7 +72,6 @@ const handlerLogout = () => {
     router.push("/");
 };
 </script>
-
 <style lang="scss" scoped>
 a {
     cursor: pointer;

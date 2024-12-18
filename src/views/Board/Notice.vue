@@ -4,4 +4,8 @@
     <NoticeMain />
 </template>
 
-<script setup></script>
+<script setup>
+const provideValue = ref();
+
+provide('providedValue', provideValue);
+</script>

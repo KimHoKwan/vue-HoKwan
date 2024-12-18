@@ -1,17 +1,18 @@
-import { createRouter, createWebHistory } from 'vue-router';
-import Login from '../views/Login/Login.vue';
-import DashBoard from '../views/DashBoard/DashBoard.vue';
-import Notice from '../views/Board/Notice.vue';
+import { createRouter, createWebHistory } from "vue-router";
+import Login from "../views/Login/Login.vue";
+import DashBoard from "../views/DashBoard/DashBoard.vue";
+import Notice from "../views/Board/Notice.vue";
+import NoticeDetail from "../components/page/Board/Notice/NoticeDetail.vue";
 
 const routes = [
     {
-        path: '/',
-        name: 'login',
+        path: "/",
+        name: "login",
         component: Login,
     },
     {
-        path: '/vue',
-        name: 'vue',
+        path: "/vue",
+        name: "vue",
         component: DashBoard,
         children: [
             {
@@ -19,20 +20,28 @@ const routes = [
                 name: 'board',
                 children: [
                     {
-                        // notice.do -> localhost:5173/board/notice.do
-                        // /notice.do -> localhost:5173/notice.do
                         path: 'notice.do',
                         name: 'notice',
                         component: Notice,
-                    }
-                ]
+                    },
+                    {
+                        path: 'notice.do/:idx',
+                        name: 'noticeDetail',
+                        component: NoticeDetail,
+                    },
+                    {
+                        path: 'notice.do/insert',
+                        name: 'noticeInsert',
+                        component: NoticeDetail,
+                    },
+                ],
             },
-        ]
+        ],
     },
 ];
 
 const router = createRouter({
-    history: createWebHistory('/'),
+    history: createWebHistory("/"),
     routes,
 });
 
